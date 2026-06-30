@@ -8,6 +8,8 @@ interface ToolScreenLayoutProps {
   children: React.ReactNode;
   footer?: React.ReactNode;
   contentStyle?: ViewStyle;
+  infoIcon?: 'information-circle-outline' | 'help-circle-outline';
+  onInfoPress?: () => void;
 }
 
 export function ToolScreenLayout({
@@ -16,12 +18,20 @@ export function ToolScreenLayout({
   children,
   footer,
   contentStyle,
+  infoIcon,
+  onInfoPress,
 }: ToolScreenLayoutProps) {
   const { colors } = useTheme();
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
-      <AppHeader title={title} subtitle={subtitle} showBack />
+      <AppHeader
+        title={title}
+        subtitle={subtitle}
+        showBack
+        infoIcon={infoIcon}
+        onInfoPress={onInfoPress}
+      />
       <ScrollView
         contentContainerStyle={[styles.content, contentStyle]}
         showsVerticalScrollIndicator={false}
@@ -39,7 +49,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: spacing.base,
+    paddingHorizontal: spacing.screen,
+    paddingTop: spacing.section,
     paddingBottom: spacing['3xl'],
     gap: spacing.base,
   },

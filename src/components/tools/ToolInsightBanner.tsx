@@ -13,7 +13,7 @@ export function ToolInsightBanner({ icon, title, description }: ToolInsightBanne
   const typography = createTypography(colors);
 
   return (
-    <View style={[styles.banner, { backgroundColor: colors.primaryLight, borderColor: colors.border }]}>
+    <View style={[styles.banner, { backgroundColor: colors.primaryLight, borderColor: colors.primary + '30' }]}>
       <View style={[styles.iconWrap, { backgroundColor: colors.surface }]}>
         <Ionicons name={icon} size={22} color={colors.primary} />
       </View>

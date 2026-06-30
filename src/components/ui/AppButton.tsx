@@ -57,7 +57,7 @@ export function AppButton({
     switch (variant) {
       case 'primary':
       case 'danger':
-        return colors.surface;
+        return '#FFFFFF';
       case 'secondary':
       case 'ghost':
         return colors.primary;
@@ -66,10 +66,10 @@ export function AppButton({
 
   const sizeStyle: ViewStyle =
     size === 'sm'
-      ? { paddingVertical: spacing.sm, paddingHorizontal: spacing.base }
+      ? { height: 40, paddingHorizontal: spacing.base }
       : size === 'lg'
-        ? { paddingVertical: spacing.base, paddingHorizontal: spacing.xl }
-        : { paddingVertical: spacing.md, paddingHorizontal: spacing.lg };
+        ? { height: 60, paddingHorizontal: spacing.xl }
+        : { height: 56, paddingHorizontal: spacing.lg };
 
   return (
     <Pressable
@@ -106,7 +106,6 @@ const styles = StyleSheet.create({
     borderRadius: radius.button,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 48,
   },
   content: {
     flexDirection: 'row',
@@ -123,7 +122,8 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   pressed: {
-    opacity: 0.88,
+    opacity: 0.85,
+    transform: [{ scale: 0.98 }],
   },
   disabled: {
     opacity: 0.5,

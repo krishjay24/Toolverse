@@ -1,8 +1,10 @@
 export interface ThemeColors {
   primary: string;
+  primaryDark: string;
   primaryLight: string;
   background: string;
   surface: string;
+  surfaceContainer: string;
   textPrimary: string;
   textSecondary: string;
   border: string;
@@ -15,13 +17,15 @@ export interface ThemeColors {
 }
 
 export const lightColors: ThemeColors = {
-  primary: '#2563EB',
-  primaryLight: '#DBEAFE',
-  background: '#F8FAFC',
+  primary: '#0B5CFF',
+  primaryDark: '#0046CC',
+  primaryLight: '#EAF1FF',
+  background: '#F7F8FC',
   surface: '#FFFFFF',
-  textPrimary: '#0F172A',
+  surfaceContainer: '#F0F4FF',
+  textPrimary: '#111827',
   textSecondary: '#64748B',
-  border: '#E2E8F0',
+  border: '#D7DCE8',
   success: '#16A34A',
   successLight: '#DCFCE7',
   warning: '#F59E0B',
@@ -31,11 +35,13 @@ export const lightColors: ThemeColors = {
 };
 
 export const darkColors: ThemeColors = {
-  primary: '#3B82F6',
-  primaryLight: '#1E3A5F',
+  primary: '#4D7EFF',
+  primaryDark: '#0046CC',
+  primaryLight: '#1A2E5A',
   background: '#0F172A',
   surface: '#1E293B',
-  textPrimary: '#F8FAFC',
+  surfaceContainer: '#162035',
+  textPrimary: '#F1F5F9',
   textSecondary: '#94A3B8',
   border: '#334155',
   success: '#22C55E',

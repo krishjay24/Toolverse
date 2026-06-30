@@ -1,15 +1,12 @@
 import { Alert, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { AppButton } from '@/components/ui/AppButton';
 import { AppHeader } from '@/components/ui/AppHeader';
-import { AppCard } from '@/components/ui/AppCard';
 import { ThemeSelector } from '@/components/ui/ThemeSelector';
-import { ToolverseLogo } from '@/components/brand/ToolverseLogo';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
 import { useAppStore } from '@/store/useAppStore';
 import { useToolStore } from '@/store/useToolStore';
-import { useTheme, spacing, createTypography } from '@/theme';
+import { useTheme, spacing, radius, createTypography } from '@/theme';
 
 interface SettingsRowProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -48,7 +45,7 @@ function SettingsRow({ icon, label, value, onPress, destructive }: SettingsRowPr
         <Text style={[typography.body, destructive && { color: colors.error }]}>{label}</Text>
       </View>
       <View style={styles.rowRight}>
-        {value ? <Text style={typography.bodySmall}>{value}</Text> : null}
+        {value ? <Text style={[typography.bodySmall, { color: colors.textSecondary }]}>{value}</Text> : null}
         {onPress ? (
           <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
         ) : null}
@@ -62,27 +59,10 @@ export function SettingsScreen() {
   const themePreference = useAppStore((s) => s.themePreference);
   const setThemePreference = useAppStore((s) => s.setThemePreference);
   const getUserLabel = useAppStore((s) => s.getUserLabel);
-  const userEmail = useAppStore((s) => s.userEmail);
-  const isLoggedIn = useAppStore((s) => s.isLoggedIn);
-  const logout = useAppStore((s) => s.logout);
   const clearHistory = useToolStore((s) => s.clearHistory);
   const tabBarInset = useTabBarInset();
   const { colors } = useTheme();
   const typography = createTypography(colors);
-
-  const handleLogout = () => {
-    Alert.alert('Reset session', 'Return to the welcome screen?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Logout',
-        style: 'destructive',
-        onPress: () => {
-          logout();
-          router.replace('/auth/login');
-        },
-      },
-    ]);
-  };
 
   const handleClearHistory = () => {
     Alert.alert('Clear history', 'Remove all tool activity from this device?', [
@@ -92,41 +72,51 @@ export function SettingsScreen() {
   };
 
   const handleShareApp = async () => {
-    await Share.share({
-      message: 'Try Toolverse — one app with endless on-device utilities.',
-    });
+    await Share.share({ message: 'Try Toolverse — one app with endless on-device utilities.' });
   };
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
-      <AppHeader title="Settings" subtitle="Preferences & about" />
+      <AppHeader showLogo onRightPress={() => {}} />
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: tabBarInset + spacing.xl }]}
         showsVerticalScrollIndicator={false}
       >
-        <AppCard style={styles.brandCard}>
-          <ToolverseLogo size={56} />
-          <Text style={typography.h2}>Toolverse</Text>
-          <Text style={typography.bodySmall}>One app. Endless utilities.</Text>
-        </AppCard>
+        {/* Page title */}
+        <Text style={[typography.h2, { color: colors.textPrimary }]}>Settings</Text>
 
-        <AppCard style={styles.userCard}>
-          <Text style={typography.label}>Signed in as</Text>
-          <Text style={typography.h3}>{getUserLabel()}</Text>
-          {isLoggedIn && userEmail ? (
-            <Text style={typography.bodySmall}>{userEmail}</Text>
-          ) : (
-            <Text style={typography.bodySmall}>Guest mode — all tools are available.</Text>
-          )}
-        </AppCard>
-        <AppButton title="Logout / Reset session" onPress={handleLogout} variant="danger" fullWidth />
+        {/* Profile card */}
+        <View style={[styles.profileCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={[styles.avatarCircle, { backgroundColor: colors.primaryLight }]}>
+            <Ionicons name="person" size={28} color={colors.primary} />
+          </View>
+          <View style={styles.profileInfo}>
+            <Text style={[typography.label, { color: colors.textPrimary }]}>{getUserLabel()}</Text>
+            <Text style={[typography.bodySmall, { color: colors.textSecondary }]}>
+              All tools available — no account required
+            </Text>
+          </View>
+        </View>
 
-        <AppCard style={styles.themeCard}>
-          <Text style={typography.label}>Appearance</Text>
-          <ThemeSelector value={themePreference} onChange={setThemePreference} />
-        </AppCard>
+        {/* Appearance */}
+        <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={styles.sectionHeader}>
+            <Text style={[typography.label, { color: colors.textSecondary, textTransform: 'uppercase', fontSize: 11, letterSpacing: 0.8 }]}>
+              Appearance
+            </Text>
+          </View>
+          <View style={styles.sectionBody}>
+            <ThemeSelector value={themePreference} onChange={setThemePreference} />
+          </View>
+        </View>
 
-        <AppCard padded={false}>
+        {/* Legal */}
+        <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={styles.sectionHeader}>
+            <Text style={[typography.label, { color: colors.textSecondary, textTransform: 'uppercase', fontSize: 11, letterSpacing: 0.8 }]}>
+              Legal
+            </Text>
+          </View>
           <SettingsRow
             icon="shield-checkmark-outline"
             label="Privacy Policy"
@@ -138,30 +128,35 @@ export function SettingsScreen() {
             label="Terms of Service"
             onPress={() => router.push('/settings/terms')}
           />
-        </AppCard>
+        </View>
 
-        <AppCard padded={false}>
+        {/* About */}
+        <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={styles.sectionHeader}>
+            <Text style={[typography.label, { color: colors.textSecondary, textTransform: 'uppercase', fontSize: 11, letterSpacing: 0.8 }]}>
+              About
+            </Text>
+          </View>
           <SettingsRow
             icon="star-outline"
             label="Rate on Play Store"
-            onPress={() =>
-              Alert.alert('Rate Toolverse', 'Play Store link will be added before public release.')
-            }
+            onPress={() => Alert.alert('Rate Toolverse', 'Play Store link coming before public release.')}
           />
           <View style={[styles.divider, { backgroundColor: colors.border }]} />
           <SettingsRow icon="share-social-outline" label="Share App" onPress={handleShareApp} />
           <View style={[styles.divider, { backgroundColor: colors.border }]} />
           <SettingsRow icon="information-circle-outline" label="Version" value={appVersion} />
-        </AppCard>
+        </View>
 
-        <AppCard padded={false}>
+        {/* Danger zone */}
+        <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <SettingsRow
             icon="trash-outline"
             label="Clear history"
             destructive
             onPress={handleClearHistory}
           />
-        </AppCard>
+        </View>
       </ScrollView>
     </View>
   );
@@ -170,16 +165,43 @@ export function SettingsScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: {
-    paddingHorizontal: spacing.base,
+    paddingHorizontal: spacing.screen,
+    paddingTop: spacing.base,
     gap: spacing.base,
   },
-  brandCard: {
+  profileCard: {
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
-    paddingVertical: spacing.xl,
+    gap: spacing.md,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    padding: spacing.base,
   },
-  userCard: { gap: spacing.sm },
-  themeCard: { gap: spacing.md },
+  avatarCircle: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileInfo: {
+    flex: 1,
+    gap: spacing.xs,
+  },
+  section: {
+    borderRadius: radius.card,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  sectionHeader: {
+    paddingHorizontal: spacing.base,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
+  },
+  sectionBody: {
+    paddingHorizontal: spacing.base,
+    paddingBottom: spacing.base,
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -196,7 +218,7 @@ const styles = StyleSheet.create({
   rowIcon: {
     width: 36,
     height: 36,
-    borderRadius: 12,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },

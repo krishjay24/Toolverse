@@ -49,12 +49,11 @@ export function ImageResizerScreen() {
 
   const pickImage = async () => {
     setError(null);
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      setError('Photo library permission is required.');
-      return;
-    }
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'] });
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 1,
+      allowsEditing: false,
+    });
     if (result.canceled || !result.assets[0]) {
       return;
     }

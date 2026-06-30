@@ -4,13 +4,11 @@ import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import QRCode from 'react-native-qrcode-svg';
 import { AppButton } from '@/components/ui/AppButton';
-import { AppCard } from '@/components/ui/AppCard';
 import { AppInput } from '@/components/ui/AppInput';
 import { ToolActionRow } from '@/components/tools/ToolActionRow';
-import { ToolInsightBanner } from '@/components/tools/ToolInsightBanner';
 import { ToolScreenLayout } from '@/components/tools/ToolScreenLayout';
 import { useToolTracking } from '@/hooks/useToolTracking';
-import { useTheme, createTypography } from '@/theme';
+import { useTheme, spacing, radius, createTypography } from '@/theme';
 import { showCopiedAlert, copyToClipboard } from '@/utils/clipboard';
 import { qrContentSchema } from '@/utils/validators';
 
@@ -46,21 +44,15 @@ export function QrGeneratorScreen() {
   };
 
   const handleShareText = async () => {
-    if (generatedValue) {
-      await Share.share({ message: generatedValue });
-    }
+    if (generatedValue) await Share.share({ message: generatedValue });
   };
 
   const handleCopy = async () => {
-    if (generatedValue && (await copyToClipboard(generatedValue))) {
-      showCopiedAlert();
-    }
+    if (generatedValue && (await copyToClipboard(generatedValue))) showCopiedAlert();
   };
 
   const handleShareQrImage = () => {
-    if (!qrRef.current) {
-      return;
-    }
+    if (!qrRef.current) return;
     setSharingQr(true);
     qrRef.current.toDataURL(async (dataUrl: string) => {
       try {
@@ -80,56 +72,113 @@ export function QrGeneratorScreen() {
 
   return (
     <ToolScreenLayout title="QR Generator" subtitle="Create QR codes instantly">
-      <ToolInsightBanner
-        icon="flash-outline"
-        title="Create in seconds"
-        description="Enter any text or URL. Share the code or copy the content when ready."
-      />
-      <AppInput
-        label="Text or URL"
-        placeholder="https://example.com"
-        value={value}
-        onChangeText={setValue}
-        error={error}
-        helperText="Works with links, plain text, and short messages."
-        multiline
-        autoCapitalize="none"
-      />
-      <AppButton title="Generate QR" onPress={handleGenerate} fullWidth iconLeft="qr-code-outline" />
-      <AppButton title="Clear" onPress={handleClear} variant="secondary" fullWidth />
+      {/* Input section */}
+      <View style={[styles.inputSection, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <Text style={[typography.caption, { color: colors.primary, textTransform: 'uppercase', letterSpacing: 0.8 }]}>
+          Content Source
+        </Text>
+        <AppInput
+          label="URL or Text"
+          placeholder="https://toolverse.app"
+          value={value}
+          onChangeText={setValue}
+          error={error}
+          helperText="Works with links, plain text, and short messages."
+          multiline
+          autoCapitalize="none"
+        />
+      </View>
+
+      <AppButton title="Generate QR Code" onPress={handleGenerate} fullWidth iconLeft="qr-code-outline" />
 
       {generatedValue ? (
-        <AppCard style={styles.previewCard}>
-          <Text style={typography.label}>Your QR code</Text>
-          <View style={[styles.qrWrap, { borderColor: colors.border, backgroundColor: colors.surface }]}>
-            <QRCode
-              value={generatedValue}
-              size={220}
-              color={colors.textPrimary}
-              backgroundColor={colors.surface}
-              getRef={(ref: QrCodeRef) => { qrRef.current = ref; }}
-            />
+        <>
+          {/* QR preview card */}
+          <View style={[styles.previewCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={[styles.qrWrap, { backgroundColor: '#FFFFFF', borderColor: colors.border }]}>
+              <QRCode
+                value={generatedValue}
+                size={220}
+                color={colors.textPrimary}
+                backgroundColor="#FFFFFF"
+                getRef={(ref: QrCodeRef) => { qrRef.current = ref; }}
+              />
+            </View>
+
+            {/* Format info row */}
+            <View style={styles.formatRow}>
+              <View style={[styles.formatChip, { backgroundColor: colors.background }]}>
+                <Text style={[typography.caption, { color: colors.textSecondary }]}>Size</Text>
+                <Text style={[typography.label, { color: colors.textPrimary, fontSize: 12 }]}>1024×1024</Text>
+              </View>
+              <View style={[styles.formatChip, { backgroundColor: colors.background }]}>
+                <Text style={[typography.caption, { color: colors.textSecondary }]}>Format</Text>
+                <Text style={[typography.label, { color: colors.textPrimary, fontSize: 12 }]}>PNG</Text>
+              </View>
+            </View>
+
+            <Text style={[typography.bodySmall, { color: colors.textSecondary, textAlign: 'center' }]} numberOfLines={3}>
+              {generatedValue}
+            </Text>
           </View>
-          <Text style={[typography.bodySmall, styles.previewValue]} numberOfLines={3}>
-            {generatedValue}
-          </Text>
+
           <ToolActionRow onShare={handleShareText} onCopy={handleCopy} shareLabel="Share text" copyLabel="Copy" />
           <AppButton
-            title="Share QR image"
+            title="Share QR Image"
             onPress={handleShareQrImage}
             loading={sharingQr}
             variant="secondary"
             iconLeft="share-outline"
             fullWidth
           />
-        </AppCard>
+          <AppButton title="Clear" onPress={handleClear} variant="ghost" fullWidth />
+        </>
       ) : null}
+
+      {/* Tip */}
+      <View style={[styles.tipBanner, { backgroundColor: colors.primaryLight }]}>
+        <Text style={[typography.bodySmall, { color: colors.primary }]}>
+          💡 Generated QR codes are automatically saved to your history for later access.
+        </Text>
+      </View>
     </ToolScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  previewCard: { alignItems: 'center', gap: 12 },
-  qrWrap: { padding: 20, borderRadius: 20, borderWidth: 1 },
-  previewValue: { textAlign: 'center' },
+  inputSection: {
+    borderRadius: radius.card,
+    borderWidth: 1,
+    padding: spacing.base,
+    gap: spacing.sm,
+  },
+  previewCard: {
+    borderRadius: radius.card,
+    borderWidth: 1,
+    padding: spacing.base,
+    alignItems: 'center',
+    gap: spacing.base,
+  },
+  qrWrap: {
+    padding: spacing.lg,
+    borderRadius: radius.card,
+    borderWidth: 1,
+  },
+  formatRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    width: '100%',
+  },
+  formatChip: {
+    flex: 1,
+    borderRadius: 12,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    alignItems: 'center',
+    gap: 2,
+  },
+  tipBanner: {
+    borderRadius: radius.card,
+    padding: spacing.base,
+  },
 });

@@ -2,7 +2,6 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { ToolverseLogo } from '@/components/brand/ToolverseLogo';
 import { useTheme, spacing, createTypography } from '@/theme';
 
 interface AppHeaderProps {
@@ -12,6 +11,9 @@ interface AppHeaderProps {
   showBack?: boolean;
   rightIcon?: keyof typeof Ionicons.glyphMap;
   onRightPress?: () => void;
+  /** Extra icon shown on tool pages (e.g. info) */
+  infoIcon?: keyof typeof Ionicons.glyphMap;
+  onInfoPress?: () => void;
 }
 
 export function AppHeader({
@@ -19,8 +21,10 @@ export function AppHeader({
   subtitle,
   showLogo = false,
   showBack = false,
-  rightIcon = 'settings-outline',
+  rightIcon = 'person-circle-outline',
   onRightPress,
+  infoIcon,
+  onInfoPress,
 }: AppHeaderProps) {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
@@ -42,88 +46,123 @@ export function AppHeader({
     router.push('/(tabs)/settings');
   };
 
-  return (
-    <View
-      style={[
-        styles.container,
-        { paddingTop: insets.top + spacing.sm, backgroundColor: colors.background },
-      ]}
-    >
-      <View style={styles.row}>
-        {showBack ? (
-          <Pressable onPress={handleBack} style={styles.backButton} hitSlop={8}>
-            <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
-          </Pressable>
-        ) : null}
+  if (showBack) {
+    return (
+      <View
+        style={[
+          styles.container,
+          styles.toolHeader,
+          {
+            paddingTop: insets.top + spacing.sm,
+            backgroundColor: colors.surface,
+            borderBottomColor: colors.border,
+          },
+        ]}
+      >
+        <Pressable onPress={handleBack} style={styles.backButton} hitSlop={8}>
+          <Ionicons name="arrow-back" size={24} color={colors.primary} />
+        </Pressable>
 
-        <View style={styles.titleBlock}>
-          {showLogo ? (
-            <View style={styles.logoRow}>
-              <ToolverseLogo size={44} />
-              <View style={styles.logoText}>
-                <Text style={typography.h2}>{title}</Text>
-                {subtitle ? <Text style={typography.bodySmall}>{subtitle}</Text> : null}
-              </View>
-            </View>
-          ) : (
-            <>
-              <Text style={typography.h2}>{title}</Text>
-              {subtitle ? <Text style={typography.bodySmall}>{subtitle}</Text> : null}
-            </>
-          )}
+        <View style={styles.toolTitleBlock}>
+          <Text style={[typography.h3, { color: colors.textPrimary }]} numberOfLines={1}>
+            {title}
+          </Text>
+          {subtitle ? (
+            <Text style={[typography.caption, { color: colors.textSecondary }]} numberOfLines={1}>
+              {subtitle}
+            </Text>
+          ) : null}
         </View>
 
-        {!showBack ? (
-          <Pressable
-            onPress={handleRightPress}
-            style={[styles.iconButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
-            hitSlop={8}
-          >
-            <Ionicons name={rightIcon} size={22} color={colors.textPrimary} />
+        {infoIcon ? (
+          <Pressable onPress={onInfoPress} style={styles.iconBtn} hitSlop={8}>
+            <Ionicons name={infoIcon} size={22} color={colors.textSecondary} />
           </Pressable>
         ) : (
           <View style={styles.iconSpacer} />
         )}
       </View>
+    );
+  }
+
+  return (
+    <View
+      style={[
+        styles.container,
+        styles.mainHeader,
+        {
+          paddingTop: insets.top + spacing.sm,
+          backgroundColor: colors.surface,
+          borderBottomColor: colors.border,
+        },
+      ]}
+    >
+      <View style={styles.brandBlock}>
+        <Text style={[styles.brandTitle, { color: colors.primary }]}>Toolverse</Text>
+        {subtitle ? (
+          <Text style={[typography.caption, { color: colors.textSecondary }]}>{subtitle}</Text>
+        ) : null}
+      </View>
+
+      <Pressable
+        onPress={handleRightPress}
+        style={[styles.avatarButton, { backgroundColor: colors.primaryLight, borderColor: colors.border }]}
+        hitSlop={8}
+      >
+        <Ionicons name={rightIcon} size={22} color={colors.primary} />
+      </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: spacing.base,
-    paddingBottom: spacing.base,
+    paddingHorizontal: spacing.screen,
+    paddingBottom: spacing.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  row: {
+  mainHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  titleBlock: {
-    flex: 1,
-  },
-  logoRow: {
+  toolHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
   },
-  logoText: {
+  brandBlock: {
     flex: 1,
+  },
+  brandTitle: {
+    fontSize: 26,
+    fontWeight: '800',
+    letterSpacing: -0.5,
+    lineHeight: 32,
+  },
+  toolTitleBlock: {
+    flex: 1,
+    marginLeft: spacing.sm,
   },
   backButton: {
     width: 40,
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: spacing.sm,
+    borderRadius: 20,
   },
-  iconButton: {
+  avatarButton: {
     width: 40,
     height: 40,
-    borderRadius: 12,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
+  },
+  iconBtn: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   iconSpacer: {
     width: 40,

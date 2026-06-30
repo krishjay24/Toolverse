@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { FlatList, StyleSheet, View } from 'react-native';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { AppHeader } from '@/components/ui/AppHeader';
 import { BannerAdBox } from '@/components/ads/BannerAdBox';
@@ -10,7 +10,9 @@ import { ToolCard } from '@/components/tools/ToolCard';
 import { useOpenTool } from '@/hooks/useOpenTool';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
 import { getToolsByCategory, searchTools, TOOL_CATEGORIES } from '@/constants/tools';
-import { useTheme, spacing } from '@/theme';
+import { useTheme, spacing, createTypography } from '@/theme';
+
+const AD_INSERT_AFTER = 3;
 
 export function ToolsScreen() {
   const params = useLocalSearchParams<{ category?: string }>();
@@ -19,6 +21,7 @@ export function ToolsScreen() {
   const openTool = useOpenTool();
   const tabBarInset = useTabBarInset();
   const { colors } = useTheme();
+  const typography = createTypography(colors);
 
   useEffect(() => {
     if (params.category && typeof params.category === 'string') {
@@ -37,7 +40,7 @@ export function ToolsScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
-      <AppHeader title="Tools" subtitle={`${tools.length} utilities available`} />
+      <AppHeader showLogo onRightPress={() => {}} />
       <FlatList
         data={tools}
         keyExtractor={(item) => item.id}
@@ -45,6 +48,7 @@ export function ToolsScreen() {
         ListHeaderComponent={
           <View style={styles.headerBlock}>
             <SearchBar value={query} onChangeText={setQuery} placeholder="Search all tools..." />
+            <Text style={[typography.h2, { color: colors.textPrimary }]}>All Tools</Text>
             <CategoryChips
               categories={TOOL_CATEGORIES}
               activeId={activeCategory}
@@ -61,9 +65,14 @@ export function ToolsScreen() {
           />
         }
         ListFooterComponent={<BannerAdBox />}
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
           <View style={styles.listItem}>
-            <ToolCard {...item} onPress={() => openTool(item.route)} />
+            <ToolCard {...item} colorIndex={index} onPress={() => openTool(item.route)} />
+            {index === AD_INSERT_AFTER ? (
+              <View style={styles.inlineAd}>
+                <BannerAdBox />
+              </View>
+            ) : null}
           </View>
         )}
         showsVerticalScrollIndicator={false}
@@ -75,7 +84,7 @@ export function ToolsScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: {
-    paddingHorizontal: spacing.base,
+    paddingHorizontal: spacing.screen,
   },
   headerBlock: {
     gap: spacing.base,
@@ -83,5 +92,9 @@ const styles = StyleSheet.create({
   },
   listItem: {
     marginBottom: spacing.sm,
+  },
+  inlineAd: {
+    marginTop: spacing.sm,
+    marginBottom: spacing.xs,
   },
 });

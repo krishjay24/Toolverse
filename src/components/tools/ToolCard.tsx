@@ -3,6 +3,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme, spacing, radius, createTypography } from '@/theme';
 import { CATEGORY_LABELS, ToolCategory, ToolIconName } from '@/types/tool';
 
+const ICON_BG_COLORS = [
+  '#EAF1FF',
+  '#E8F5E9',
+  '#FFF3E0',
+  '#FCE4EC',
+  '#F3E5F5',
+  '#E0F7FA',
+];
+
 interface ToolCardProps {
   title: string;
   description: string;
@@ -10,6 +19,7 @@ interface ToolCardProps {
   category: ToolCategory;
   onPress: () => void;
   compact?: boolean;
+  colorIndex?: number;
 }
 
 export function ToolCard({
@@ -19,9 +29,11 @@ export function ToolCard({
   category,
   onPress,
   compact = false,
+  colorIndex = 0,
 }: ToolCardProps) {
   const { colors } = useTheme();
   const typography = createTypography(colors);
+  const iconBg = ICON_BG_COLORS[colorIndex % ICON_BG_COLORS.length];
 
   return (
     <Pressable
@@ -31,13 +43,12 @@ export function ToolCard({
         {
           backgroundColor: colors.surface,
           borderColor: colors.border,
-          minHeight: compact ? 108 : 120,
         },
         pressed && styles.pressed,
       ]}
     >
-      <View style={[styles.iconWrap, { backgroundColor: colors.primaryLight }]}>
-        <Ionicons name={icon} size={20} color={colors.primary} />
+      <View style={[styles.iconWrap, { backgroundColor: iconBg }]}>
+        <Ionicons name={icon} size={24} color={colors.primary} />
       </View>
 
       <View style={styles.body}>
@@ -47,14 +58,14 @@ export function ToolCard({
         <Text style={[typography.bodySmall, styles.description]} numberOfLines={compact ? 1 : 2}>
           {description}
         </Text>
-        <View style={[styles.pill, { backgroundColor: colors.background }]}>
-          <Text style={[typography.caption, { color: colors.textSecondary }]}>
+        <View style={[styles.pill, { backgroundColor: colors.primaryLight }]}>
+          <Text style={[typography.caption, { color: colors.primary }]}>
             {CATEGORY_LABELS[category]}
           </Text>
         </View>
       </View>
 
-      <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} style={styles.chevron} />
+      <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
     </Pressable>
   );
 }
@@ -65,36 +76,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderRadius: radius.card,
-    padding: spacing.md,
+    paddingHorizontal: spacing.base,
+    paddingVertical: spacing.md,
     gap: spacing.md,
   },
   pressed: {
     opacity: 0.92,
+    transform: [{ scale: 0.99 }],
   },
   iconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
+    width: 52,
+    height: 52,
+    borderRadius: radius.icon,
     alignItems: 'center',
     justifyContent: 'center',
   },
   body: {
     flex: 1,
-    gap: 2,
+    gap: spacing.xs,
   },
   title: {
-    marginBottom: 2,
+    fontSize: 15,
   },
   description: {
-    marginBottom: spacing.xs,
+    lineHeight: 18,
   },
   pill: {
     alignSelf: 'flex-start',
     borderRadius: radius.full,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-  },
-  chevron: {
-    marginLeft: spacing.xs,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    marginTop: 2,
   },
 });

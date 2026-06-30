@@ -8,10 +8,6 @@ const SECTIONS = [
     body: 'Toolverse is a local utility app. All tools run on your device. No account is required to use the app.',
   },
   {
-    title: 'Demo login',
-    body: 'The optional demo login is local only. Credentials are checked on your device and are not sent to any server.',
-  },
-  {
     title: 'Information we collect',
     body: 'Toolverse does not directly collect personal account data. Tool usage history is stored locally on your device and can be cleared anytime from Settings.',
   },

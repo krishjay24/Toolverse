@@ -1,15 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Constants, { ExecutionEnvironment } from 'expo-constants';
 import * as FileSystem from 'expo-file-system/legacy';
+import * as Sharing from 'expo-sharing';
 import { Alert, Platform } from 'react-native';
 
 const { StorageAccessFramework } = FileSystem;
 
 const DOWNLOADS_DIR_KEY = '@toolverse/downloads_directory_uri';
-
-function isExpoGo(): boolean {
-  return Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
-}
 
 async function writeImageToSafDirectory(
   directoryUri: string,
@@ -95,29 +91,22 @@ async function saveToAndroidDownloads(
   }
 }
 
-/**
- * Standard app-style save via MediaStore (dev / production builds).
- * One-time photo permission — no folder picker. Not available in Expo Go.
- */
-async function saveWithMediaLibrary(
+async function saveWithShareSheet(
   uri: string,
-): Promise<{ success: boolean; message: string } | null> {
-  if (isExpoGo()) {
-    return null;
+  mimeType: string,
+): Promise<{ success: boolean; message: string }> {
+  if (!(await Sharing.isAvailableAsync())) {
+    return { success: false, message: 'Sharing is not available on this device.' };
   }
 
-  try {
-    const MediaLibrary = await import('expo-media-library');
-    const { status } = await MediaLibrary.requestPermissionsAsync(true, ['photo']);
-    if (status !== 'granted') {
-      return { success: false, message: 'Allow photo access to save images to your gallery.' };
-    }
-
-    await MediaLibrary.Asset.create(uri);
-    return { success: true, message: 'Image saved to your gallery.' };
-  } catch {
-    return null;
-  }
+  await Sharing.shareAsync(uri, {
+    mimeType,
+    dialogTitle: 'Save image',
+  });
+  return {
+    success: true,
+    message: 'Use Save or Save to Files to keep the image on your device.',
+  };
 }
 
 export async function saveImageToGallery(
@@ -125,22 +114,11 @@ export async function saveImageToGallery(
   _albumName = 'Toolverse',
   mimeType = 'image/jpeg',
 ): Promise<{ success: boolean; message: string }> {
-  const galleryResult = await saveWithMediaLibrary(uri);
-  if (galleryResult?.success) {
-    return galleryResult;
-  }
-  if (galleryResult && !galleryResult.success) {
-    return galleryResult;
-  }
-
   if (Platform.OS === 'android') {
     return saveToAndroidDownloads(uri, mimeType);
   }
 
-  return {
-    success: false,
-    message: galleryResult?.message ?? 'Could not save the image.',
-  };
+  return saveWithShareSheet(uri, mimeType);
 }
 
 export async function saveBase64ImageToGallery(

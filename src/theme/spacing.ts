@@ -7,6 +7,10 @@ export const spacing = {
   xl: 24,
   '2xl': 32,
   '3xl': 40,
+  /** Screen-level horizontal padding per design spec (20px) */
+  screen: 20,
+  /** Standard section gap (24px) */
+  section: 24,
 } as const;
 
 export type SpacingKey = keyof typeof spacing;

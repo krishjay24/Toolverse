@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme, spacing, radius, createTypography } from '@/theme';
 
 /**
@@ -12,9 +13,26 @@ export function AdPlaceholder() {
   const typography = createTypography(colors);
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-      <Text style={[typography.caption, styles.label]}>Advertisement</Text>
-      <Text style={typography.caption}>Banner ad space</Text>
+    <View style={[styles.container, { backgroundColor: colors.surfaceContainer, borderColor: colors.border }]}>
+      <View style={styles.topRow}>
+        <Text style={[typography.caption, styles.sponsoredLabel, { color: colors.textSecondary }]}>
+          SPONSORED
+        </Text>
+      </View>
+      <View style={styles.body}>
+        <View style={[styles.iconWrap, { backgroundColor: colors.primaryLight }]}>
+          <Ionicons name="rocket-outline" size={22} color={colors.primary} />
+        </View>
+        <View style={styles.textWrap}>
+          <Text style={[typography.label, { color: colors.textPrimary }]}>Premium Utilities Pro</Text>
+          <Text style={[typography.bodySmall, { color: colors.textSecondary }]} numberOfLines={1}>
+            Unlock 50+ advanced tools and cloud sync.
+          </Text>
+        </View>
+        <Pressable style={[styles.upgradeBtn, { backgroundColor: colors.primary }]}>
+          <Text style={[typography.caption, { color: '#FFFFFF', fontWeight: '700' }]}>Upgrade</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -23,16 +41,40 @@ const styles = StyleSheet.create({
   container: {
     borderWidth: 1,
     borderRadius: radius.card,
-    paddingVertical: spacing.lg,
     paddingHorizontal: spacing.base,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 60,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.md,
     width: '100%',
+    gap: spacing.xs,
   },
-  label: {
+  topRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  sponsoredLabel: {
     textTransform: 'uppercase',
     letterSpacing: 0.8,
-    marginBottom: spacing.xs,
+    fontSize: 10,
+  },
+  body: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  iconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  textWrap: {
+    flex: 1,
+    gap: 2,
+  },
+  upgradeBtn: {
+    borderRadius: 20,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
   },
 });

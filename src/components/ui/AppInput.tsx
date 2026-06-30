@@ -39,16 +39,26 @@ export function AppInput({
 
   return (
     <View style={styles.wrapper}>
-      {label ? <Text style={typography.label}>{label}</Text> : null}
+      {label ? (
+        <Text style={[typography.label, { color: colors.textPrimary }]}>{label}</Text>
+      ) : null}
       <View
         style={[
           styles.inputRow,
-          { backgroundColor: colors.surface, borderColor: error ? colors.error : colors.border },
+          {
+            backgroundColor: colors.surface,
+            borderColor: error ? colors.error : colors.border,
+          },
+          multiline && styles.multilineRow,
         ]}
       >
-        {prefix ? <Text style={[typography.body, { color: colors.textSecondary }]}>{prefix}</Text> : null}
+        {prefix ? (
+          <Text style={[typography.body, { color: colors.textSecondary, marginRight: spacing.xs }]}>
+            {prefix}
+          </Text>
+        ) : null}
         <TextInput
-          style={[typography.body, styles.input, multiline && styles.multiline]}
+          style={[typography.body, styles.input, multiline && styles.multilineInput]}
           placeholder={placeholder}
           placeholderTextColor={colors.textSecondary}
           value={value}
@@ -57,10 +67,18 @@ export function AppInput({
           multiline={multiline}
           autoCapitalize={autoCapitalize}
         />
-        {suffix ? <Text style={[typography.body, { color: colors.textSecondary }]}>{suffix}</Text> : null}
+        {suffix ? (
+          <Text style={[typography.body, { color: colors.textSecondary, marginLeft: spacing.xs }]}>
+            {suffix}
+          </Text>
+        ) : null}
       </View>
-      {error ? <Text style={[typography.caption, { color: colors.error }]}>{error}</Text> : null}
-      {!error && helperText ? <Text style={typography.caption}>{helperText}</Text> : null}
+      {error ? (
+        <Text style={[typography.caption, { color: colors.error }]}>{error}</Text>
+      ) : null}
+      {!error && helperText ? (
+        <Text style={[typography.caption, { color: colors.textSecondary }]}>{helperText}</Text>
+      ) : null}
     </View>
   );
 }
@@ -75,14 +93,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: radius.input,
     paddingHorizontal: spacing.base,
-    minHeight: 52,
+    minHeight: 56,
+  },
+  multilineRow: {
+    alignItems: 'flex-start',
+    paddingVertical: spacing.md,
   },
   input: {
     flex: 1,
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.sm,
   },
-  multiline: {
+  multilineInput: {
     minHeight: 96,
     textAlignVertical: 'top',
+    paddingTop: 0,
   },
 });

@@ -28,7 +28,11 @@ export default function TabLayout() {
           height: tabBarHeight,
           borderTopLeftRadius: radius.tabBar,
           borderTopRightRadius: radius.tabBar,
-          ...(Platform.OS === 'android' ? { elevation: 0 } : {}),
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.06,
+          shadowRadius: 8,
+          ...(Platform.OS === 'android' ? { elevation: 4 } : {}),
         },
         tabBarItemStyle: styles.tabItem,
       }}
@@ -37,8 +41,8 @@ export default function TabLayout() {
         name="home"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'home' : 'home-outline'} size={size} color={color} />
           ),
         }}
       />
@@ -46,8 +50,8 @@ export default function TabLayout() {
         name="tools"
         options={{
           title: 'Tools',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="grid-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'grid' : 'grid-outline'} size={size} color={color} />
           ),
         }}
       />
@@ -55,8 +59,8 @@ export default function TabLayout() {
         name="history"
         options={{
           title: 'History',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="time-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'time' : 'time-outline'} size={size} color={color} />
           ),
         }}
       />
@@ -64,8 +68,8 @@ export default function TabLayout() {
         name="settings"
         options={{
           title: 'Settings',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'settings' : 'settings-outline'} size={size} color={color} />
           ),
         }}
       />

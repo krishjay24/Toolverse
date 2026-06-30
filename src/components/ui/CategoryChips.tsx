@@ -24,18 +24,17 @@ export function CategoryChips({
         key={category.id}
         style={[
           styles.chip,
-          {
-            backgroundColor: active ? colors.primaryLight : colors.surface,
-            borderColor: active ? colors.primary : colors.border,
-          },
+          active
+            ? { backgroundColor: colors.primary, borderColor: colors.primary }
+            : { backgroundColor: colors.surface, borderColor: colors.border },
         ]}
         onPress={() => onSelect(category.id)}
       >
         <Text
           style={[
             typography.bodySmall,
-            active && { color: colors.primary, fontWeight: '600' },
-            !active && { color: colors.textPrimary },
+            { fontWeight: '600' },
+            active ? { color: '#FFFFFF' } : { color: colors.textPrimary },
           ]}
         >
           {category.label}

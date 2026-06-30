@@ -16,11 +16,11 @@ export const TEST_BANNER_ID = 'ca-app-pub-3940256099942544/6300978111';
 export const TEST_INTERSTITIAL_ID = 'ca-app-pub-3940256099942544/1033173712';
 
 // Real Toolverse production ad unit IDs — used in release builds only.
-export const PRODUCTION_BANNER_ID = 'ca-app-pub-7250284876062440/3858925935';
-export const PRODUCTION_INTERSTITIAL_ID = 'ca-app-pub-7250284876062440/3170180707';
+export const PRODUCTION_BANNER_ID = 'ca-app-pub-7250284876062440/8889716132';
+export const PRODUCTION_INTERSTITIAL_ID = 'ca-app-pub-7250284876062440/1183872119';
 
 /** Must match app.json → react-native-google-mobile-ads → androidAppId */
-export const ADMOB_APP_ID_ANDROID = 'ca-app-pub-7250284876062440~2450475494';
+export const ADMOB_APP_ID_ANDROID = 'ca-app-pub-7250284876062440~8555508362';
 
 /** iOS app ID — replace when shipping iOS */
 export const ADMOB_APP_ID_IOS = 'ca-app-pub-3940256099942544~1458002511';
