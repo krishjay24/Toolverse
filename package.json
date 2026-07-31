@@ -1,6 +1,6 @@
 {
   "name": "toolverse",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "main": "expo-router/entry",
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
@@ -19,6 +19,7 @@
     "expo-router": "~56.2.9",
     "expo-sharing": "~56.0.16",
     "expo-status-bar": "~56.0.4",
+    "jpeg-js": "^0.4.4",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-hook-form": "^7.77.0",

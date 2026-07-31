@@ -89,6 +89,110 @@ export function calculateEmi(
   };
 }
 
+export interface FixedDepositResult {
+  maturityAmount: number;
+  totalInterest: number;
+}
+
+export function calculateFixedDeposit(
+  principal: number,
+  annualInterestRate: number,
+  tenureMonths: number,
+  compoundingPerYear = 4,
+): FixedDepositResult {
+  if (principal <= 0 || annualInterestRate < 0 || tenureMonths <= 0) {
+    return { maturityAmount: 0, totalInterest: 0 };
+  }
+
+  const years = tenureMonths / 12;
+  const rate = annualInterestRate / 100;
+
+  const maturityAmount =
+    principal * Math.pow(1 + rate / compoundingPerYear, compoundingPerYear * years);
+
+  return {
+    maturityAmount,
+    totalInterest: maturityAmount - principal,
+  };
+}
+
+export interface RecurringDepositResult {
+  maturityAmount: number;
+  totalDeposit: number;
+  totalInterest: number;
+}
+
+export function calculateRecurringDeposit(
+  monthlyDeposit: number,
+  annualInterestRate: number,
+  tenureMonths: number,
+): RecurringDepositResult {
+  if (monthlyDeposit <= 0 || annualInterestRate < 0 || tenureMonths <= 0) {
+    return { maturityAmount: 0, totalDeposit: 0, totalInterest: 0 };
+  }
+
+  const monthlyRate = annualInterestRate / 12 / 100;
+  const totalDeposit = monthlyDeposit * tenureMonths;
+
+  if (monthlyRate === 0) {
+    return {
+      maturityAmount: totalDeposit,
+      totalDeposit,
+      totalInterest: 0,
+    };
+  }
+
+  const maturityAmount =
+    monthlyDeposit *
+    ((Math.pow(1 + monthlyRate, tenureMonths) - 1) / monthlyRate) *
+    (1 + monthlyRate);
+
+  return {
+    maturityAmount,
+    totalDeposit,
+    totalInterest: maturityAmount - totalDeposit,
+  };
+}
+
+export interface SipResult {
+  futureValue: number;
+  totalInvested: number;
+  estimatedReturns: number;
+}
+
+export function calculateSip(
+  monthlyInvestment: number,
+  annualReturnRate: number,
+  tenureYears: number,
+): SipResult {
+  if (monthlyInvestment <= 0 || annualReturnRate < 0 || tenureYears <= 0) {
+    return { futureValue: 0, totalInvested: 0, estimatedReturns: 0 };
+  }
+
+  const monthlyRate = annualReturnRate / 12 / 100;
+  const months = tenureYears * 12;
+  const totalInvested = monthlyInvestment * months;
+
+  let futureValue: number;
+
+  if (monthlyRate === 0) {
+    futureValue = totalInvested;
+  } else {
+    futureValue =
+      monthlyInvestment *
+      ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate) *
+      (1 + monthlyRate);
+  }
+
+  const estimatedReturns = futureValue - totalInvested;
+
+  return {
+    futureValue,
+    totalInvested,
+    estimatedReturns,
+  };
+}
+
 export type CompressionQuality = 'low' | 'medium' | 'high';
 
 export function getCompressionValue(quality: CompressionQuality): number {
@@ -238,5 +342,81 @@ export function analyzeText(text: string): TextStats {
     lines: text.length === 0 ? 0 : text.split('\n').length,
     sentences: trimmed ? (trimmed.match(/[^.!?]+[.!?]+/g)?.length ?? 1) : 0,
     paragraphs,
+  };
+}
+
+export interface DiscountResult {
+  originalPrice: number;
+  discountPercent: number;
+  discountAmount: number;
+  finalPrice: number;
+  savings: number;
+}
+
+export function calculateDiscount(
+  originalPrice: number,
+  discountPercent: number,
+): DiscountResult {
+  const discountAmount = (originalPrice * discountPercent) / 100;
+  const finalPrice = originalPrice - discountAmount;
+
+  return {
+    originalPrice,
+    discountPercent,
+    discountAmount,
+    finalPrice,
+    savings: discountAmount,
+  };
+}
+
+export interface DateDifferenceResult {
+  startDate: Date;
+  endDate: Date;
+  isReversed: boolean;
+  totalDays: number;
+  weeks: number;
+  remainingDays: number;
+  approxMonths: number;
+  approxYears: number;
+}
+
+export function calculateDateDifference(
+  startDate: Date,
+  endDate: Date,
+): DateDifferenceResult {
+  let start = new Date(startDate);
+  let end = new Date(endDate);
+  let isReversed = false;
+
+  // Normalize dates to midnight UTC
+  start.setHours(0, 0, 0, 0);
+  end.setHours(0, 0, 0, 0);
+
+  // If end date is before start date, swap them and mark as reversed
+  if (end < start) {
+    [start, end] = [end, start];
+    isReversed = true;
+  }
+
+  const diffMs = end.getTime() - start.getTime();
+  const totalDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const weeks = Math.floor(totalDays / 7);
+  const remainingDays = totalDays % 7;
+
+  // Approximate months (using 30.44 average days per month)
+  const approxMonths = Math.floor(totalDays / 30.44);
+
+  // Approximate years (using 365.25 average days per year)
+  const approxYears = Math.floor(totalDays / 365.25);
+
+  return {
+    startDate: start,
+    endDate: end,
+    isReversed,
+    totalDays,
+    weeks,
+    remainingDays,
+    approxMonths,
+    approxYears,
   };
 }

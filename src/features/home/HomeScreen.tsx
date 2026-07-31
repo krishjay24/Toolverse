@@ -1,155 +1,173 @@
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { AppHeader } from '@/components/ui/AppHeader';
-import { BannerAdBox } from '@/components/ads/BannerAdBox';
-import { SearchBar } from '@/components/ui/SearchBar';
+import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
+import { DashboardAdSlot } from '@/components/dashboard/DashboardAdSlot';
+import { EmptyToolsState } from '@/components/dashboard/EmptyToolsState';
+import { ToolFilterChips } from '@/components/dashboard/ToolFilterChips';
+import { ToolSearchBar } from '@/components/dashboard/ToolSearchBar';
+import { ToolSection } from '@/components/dashboard/ToolSection';
+import {
+  DASHBOARD_SECTIONS,
+  FilterChipId,
+  POPULAR_SECTION,
+  getVisibleSections,
+  showBannerAd,
+  showPopularSection,
+} from '@/constants/dashboard';
+import { POPULAR_TOOLS, TOOLS, getToolsByCategory, searchTools } from '@/constants/tools';
 import { SectionHeader } from '@/components/ui/SectionHeader';
-import { CategoryChips } from '@/components/ui/CategoryChips';
-import { ToolCard } from '@/components/tools/ToolCard';
+import { ToolDashboardCard } from '@/components/tools/ToolDashboardCard';
 import { useOpenTool } from '@/hooks/useOpenTool';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
-import { getToolById, RECOMMENDED_TOOLS, TOOL_CATEGORIES, searchTools } from '@/constants/tools';
-import { useTheme, spacing, radius, createTypography } from '@/theme';
+import { useAppStore } from '@/store/useAppStore';
+import { Tool, ToolCategory } from '@/types/tool';
+import { spacing, useTheme } from '@/theme';
 
-const QUICK_ACTION_IDS = ['qr-scanner', 'image-compressor', 'emi-calculator', 'bmi-calculator'] as const;
-
-interface QuickActionTileProps {
-  title: string;
-  subtitle: string;
-  icon: string;
-  bgColor: string;
-  onPress: () => void;
-}
-
-function QuickActionTile({ title, subtitle, icon, bgColor, onPress }: QuickActionTileProps) {
-  const { colors } = useTheme();
-  const typography = createTypography(colors);
-
-  return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.quickTile,
-        { backgroundColor: colors.surface, borderColor: colors.border },
-        pressed && styles.pressed,
-      ]}
-    >
-      <View style={[styles.quickIcon, { backgroundColor: bgColor }]}>
-        <Ionicons name={icon as any} size={22} color={colors.primary} />
-      </View>
-      <Text style={[typography.label, styles.quickTitle]} numberOfLines={1}>{title}</Text>
-      <Text style={[typography.caption, { color: colors.textSecondary }]} numberOfLines={1}>{subtitle}</Text>
-    </Pressable>
-  );
-}
-
-const QUICK_SUBTITLES: Record<string, string> = {
-  'qr-scanner': 'Instant scan',
-  'image-compressor': 'Reduce size',
-  'emi-calculator': 'Plan finance',
-  'bmi-calculator': 'Check health',
+const CHIP_CATEGORY_MAP: Record<Exclude<FilterChipId, 'all' | 'popular'>, ToolCategory> = {
+  finance: 'finance',
+  text: 'text',
+  qr: 'qr',
+  image: 'image',
+  health: 'health',
+  fun: 'random',
+  converters: 'converters',
+  security: 'security',
 };
 
-const QUICK_COLORS = ['#EAF1FF', '#E8F5E9', '#FFF3E0', '#F3E5F5'];
+function filterToolsForChip(tools: Tool[], activeChip: FilterChipId): Tool[] {
+  if (activeChip === 'all') {
+    return tools;
+  }
+
+  if (activeChip === 'popular') {
+    return tools.filter((tool) => tool.popular);
+  }
+
+  return tools.filter((tool) => tool.category === CHIP_CATEGORY_MAP[activeChip]);
+}
 
 export function HomeScreen() {
   const [query, setQuery] = useState('');
+  const [activeChip, setActiveChip] = useState<FilterChipId>('all');
   const openTool = useOpenTool();
   const tabBarInset = useTabBarInset();
-  const { colors } = useTheme();
-  const typography = createTypography(colors);
+  const setThemePreference = useAppStore((state) => state.setThemePreference);
+  const { colors, isDark } = useTheme();
+  const dashboardBackground = isDark ? '#020617' : '#F8FAFC';
 
-  const filteredTools = useMemo(() => searchTools(query), [query]);
-  const browseCategories = TOOL_CATEGORIES.filter((c) => c.id !== 'all');
-  const quickActions = QUICK_ACTION_IDS.map((id) => getToolById(id)).filter(Boolean);
+  const toolsByCategory = useMemo(
+    () =>
+      Object.fromEntries(
+        DASHBOARD_SECTIONS.map((section) => [section.id, getToolsByCategory(section.id)]),
+      ) as Record<ToolCategory, Tool[]>,
+    [],
+  );
 
-  const navigateToCategory = (categoryId: string) => {
-    router.push({ pathname: '/(tabs)/tools', params: { category: categoryId } });
+  const visibleSections = useMemo(() => getVisibleSections(activeChip), [activeChip]);
+  const filteredPopularTools = useMemo(
+    () => filterToolsForChip(POPULAR_TOOLS, activeChip),
+    [activeChip],
+  );
+  const nonEmptyVisibleSections = useMemo(
+    () => visibleSections.filter((section) => toolsByCategory[section.id].length > 0),
+    [toolsByCategory, visibleSections],
+  );
+  const searchedTools = useMemo(() => {
+    const baseTools = filterToolsForChip(TOOLS, activeChip);
+
+    if (!query.trim()) {
+      return baseTools;
+    }
+
+    const matchingIds = new Set(searchTools(query).map((tool) => tool.id));
+    return baseTools.filter((tool) => matchingIds.has(tool.id));
+  }, [activeChip, query]);
+
+  const handleThemeToggle = () => {
+    setThemePreference(isDark ? 'light' : 'dark');
   };
 
+  const sectionAdIndices = useMemo(() => {
+    if (query.trim()) {
+      return [] as number[];
+    }
+
+    if (activeChip === 'popular') {
+      return filteredPopularTools.length > 0 ? [0] : [];
+    }
+
+    const totalSections = nonEmptyVisibleSections.length;
+
+    if (totalSections === 0) {
+      return [] as number[];
+    }
+
+    if (activeChip !== 'all') {
+      return [0];
+    }
+
+    return Array.from(new Set([0, Math.floor((totalSections - 1) / 2), totalSections - 1]));
+  }, [activeChip, filteredPopularTools.length, nonEmptyVisibleSections, query]);
+
   return (
-    <View style={[styles.screen, { backgroundColor: colors.background }]}>
-      <AppHeader showLogo onRightPress={() => router.push('/(tabs)/settings')} />
+    <View style={[styles.screen, { backgroundColor: dashboardBackground }]}> 
+      <DashboardHeader
+        onSettingsPress={() => router.push('/(tabs)/settings')}
+        onThemeToggle={handleThemeToggle}
+      />
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: tabBarInset + spacing.xl }]}
         showsVerticalScrollIndicator={false}
       >
-        <SearchBar value={query} onChangeText={setQuery} placeholder="Search utilities..." />
+        <View style={styles.topControls}>
+          <ToolSearchBar value={query} onChangeText={setQuery} />
+          <ToolFilterChips activeId={activeChip} onSelect={setActiveChip} />
+        </View>
 
-        {query ? (
+        {query.trim() ? (
           <View style={styles.section}>
-            <SectionHeader title={`${filteredTools.length} results`} />
-            <View style={styles.list}>
-              {filteredTools.map((tool, i) => (
-                <ToolCard key={tool.id} {...tool} colorIndex={i} onPress={() => openTool(tool.route)} />
-              ))}
-            </View>
-          </View>
-        ) : (
-          <>
-            {/* Hero Card */}
-            <Pressable
-              style={[styles.heroCard, { backgroundColor: colors.primary }]}
-              onPress={() => router.push('/(tabs)/tools')}
-            >
-              <View style={styles.heroContent}>
-                <Text style={[styles.heroTitle, { color: '#FFFFFF' }]}>
-                  Your everyday tools,{'\n'}ready in one tap
-                </Text>
-                <Text style={[styles.heroSub, { color: 'rgba(255,255,255,0.85)' }]}>
-                  Scan, calculate, compress, convert and create.
-                </Text>
-              </View>
-              <View style={styles.heroBadge}>
-                <Ionicons name="apps-outline" size={80} color="rgba(255,255,255,0.15)" />
-              </View>
-            </Pressable>
-
-            {/* Quick Actions */}
-            <View style={styles.section}>
-              <SectionHeader title="Quick Actions" />
-              <View style={styles.quickGrid}>
-                {quickActions.map((tool, i) => (
-                  <QuickActionTile
-                    key={tool!.id}
-                    title={tool!.title}
-                    subtitle={QUICK_SUBTITLES[tool!.id] ?? ''}
-                    icon={tool!.icon}
-                    bgColor={QUICK_COLORS[i % QUICK_COLORS.length]}
-                    onPress={() => openTool(tool!.route)}
+            <SectionHeader title={`${searchedTools.length} result${searchedTools.length === 1 ? '' : 's'}`} />
+            {searchedTools.length === 0 ? (
+              <EmptyToolsState query={query} />
+            ) : (
+              <View style={styles.grid}>
+                {searchedTools.map((tool, index) => (
+                  <ToolDashboardCard
+                    key={tool.id}
+                    title={tool.title}
+                    icon={tool.icon}
+                    category={tool.category}
+                    onPress={() => openTool(tool.route)}
+                    colorIndex={index}
                   />
                 ))}
               </View>
-            </View>
+            )}
+          </View>
+        ) : (
+          <>
+            {showPopularSection(activeChip) ? (
+              <>
+                <ToolSection
+                  section={POPULAR_SECTION}
+                  tools={filteredPopularTools}
+                  onToolPress={openTool}
+                />
+                <DashboardAdSlot visible={sectionAdIndices.includes(0)} />
+              </>
+            ) : null}
 
-            {/* Categories */}
-            <View style={styles.section}>
-              <SectionHeader
-                title="Categories"
-                actionLabel="View all"
-                onActionPress={() => router.push('/(tabs)/tools')}
-              />
-              <CategoryChips
-                categories={browseCategories}
-                activeId=""
-                onSelect={navigateToCategory}
-                scrollable
-              />
-            </View>
-
-            {/* Recommended Tools */}
-            <View style={styles.section}>
-              <SectionHeader title="Recommended Tools" />
-              <View style={styles.list}>
-                {RECOMMENDED_TOOLS.map((tool, i) => (
-                  <ToolCard key={tool.id} {...tool} colorIndex={i} onPress={() => openTool(tool.route)} />
-                ))}
+            {nonEmptyVisibleSections.map((section, index) => (
+              <View key={section.id}>
+                <ToolSection
+                  section={section}
+                  tools={toolsByCategory[section.id]}
+                  onToolPress={openTool}
+                />
+                <DashboardAdSlot visible={showBannerAd(activeChip) && sectionAdIndices.includes(index)} />
               </View>
-            </View>
-
-            <BannerAdBox />
+            ))}
           </>
         )}
       </ScrollView>
@@ -162,59 +180,17 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: spacing.screen,
     paddingTop: spacing.base,
-    gap: spacing.section,
+    gap: 0,
   },
-  section: {},
-  heroCard: {
-    borderRadius: radius.card,
-    padding: spacing.lg,
-    minHeight: 160,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    overflow: 'hidden',
+  topControls: {
+    gap: 14,
   },
-  heroContent: {
-    flex: 1,
-    gap: spacing.sm,
+  section: {
+    gap: spacing.base,
   },
-  heroTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    lineHeight: 26,
-    letterSpacing: -0.3,
-  },
-  heroSub: {
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  heroBadge: {
-    position: 'absolute',
-    top: -10,
-    right: -10,
-    opacity: 0.6,
-  },
-  quickGrid: {
+  grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.md,
   },
-  quickTile: {
-    width: '47.5%',
-    borderRadius: radius.card,
-    borderWidth: 1,
-    padding: spacing.base,
-    gap: spacing.sm,
-  },
-  quickIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  quickTitle: {
-    fontSize: 15,
-  },
-  list: { gap: spacing.sm },
-  pressed: { opacity: 0.9, transform: [{ scale: 0.98 }] },
 });

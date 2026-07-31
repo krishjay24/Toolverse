@@ -9,29 +9,35 @@ import { useTheme, spacing, radius, createTypography } from '@/theme';
  * NATIVE BUILD: Shown only when the banner fails to load; otherwise BannerAdBox renders real ads.
  */
 export function AdPlaceholder() {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const typography = createTypography(colors);
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.surfaceContainer, borderColor: colors.border }]}>
-      <View style={styles.topRow}>
-        <Text style={[typography.caption, styles.sponsoredLabel, { color: colors.textSecondary }]}>
-          SPONSORED
-        </Text>
-      </View>
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: colors.surface,
+          borderColor: colors.border,
+          shadowOpacity: isDark ? 0 : 0.05,
+          shadowRadius: isDark ? 0 : 8,
+          elevation: isDark ? 0 : 2,
+        },
+      ]}
+    >
       <View style={styles.body}>
-        <View style={[styles.iconWrap, { backgroundColor: colors.primaryLight }]}>
-          <Ionicons name="rocket-outline" size={22} color={colors.primary} />
+        <View style={[styles.iconWrap, { backgroundColor: colors.surfaceContainer }]}> 
+          <Ionicons name="megaphone-outline" size={20} color={colors.primary} />
         </View>
         <View style={styles.textWrap}>
-          <Text style={[typography.label, { color: colors.textPrimary }]}>Premium Utilities Pro</Text>
+          <Text style={[typography.label, { color: colors.textPrimary }]}>Ad space</Text>
           <Text style={[typography.bodySmall, { color: colors.textSecondary }]} numberOfLines={1}>
-            Unlock 50+ advanced tools and cloud sync.
+            A real banner ad will appear in native builds.
           </Text>
         </View>
-        <Pressable style={[styles.upgradeBtn, { backgroundColor: colors.primary }]}>
-          <Text style={[typography.caption, { color: '#FFFFFF', fontWeight: '700' }]}>Upgrade</Text>
-        </Pressable>
+        <View style={[styles.badge, { borderColor: colors.border }]}> 
+          <Text style={[typography.caption, { color: colors.textSecondary, fontWeight: '700' }]}>AD</Text>
+        </View>
       </View>
     </View>
   );
@@ -42,19 +48,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: radius.card,
     paddingHorizontal: spacing.base,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.md,
+    paddingVertical: spacing.md,
     width: '100%',
-    gap: spacing.xs,
-  },
-  topRow: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-  },
-  sponsoredLabel: {
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    fontSize: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
   },
   body: {
     flexDirection: 'row',
@@ -64,7 +61,7 @@ const styles = StyleSheet.create({
   iconWrap: {
     width: 44,
     height: 44,
-    borderRadius: 12,
+    borderRadius: radius.icon,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -72,9 +69,10 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 2,
   },
-  upgradeBtn: {
-    borderRadius: 20,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+  badge: {
+    borderRadius: radius.full,
+    borderWidth: 1,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 6,
   },
 });

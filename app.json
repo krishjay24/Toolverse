@@ -2,13 +2,13 @@
   "expo": {
     "name": "Toolverse",
     "slug": "toolverse",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#2563EB"
+      "backgroundColor": "#F8FAFC"
     },
     "scheme": "toolverse",
     "userInterfaceStyle": "automatic",
@@ -17,7 +17,7 @@
       "supportsTablet": true
     },
     "android": {
-      "versionCode": 6,
+      "versionCode": 7,
       "adaptiveIcon": {
         "backgroundColor": "#2563EB",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -54,7 +54,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow Toolverse to access your camera for QR scanning.",
+          "cameraPermission": "Allow Toolverse to access your camera for QR scanning and color picking.",
           "recordAudioAndroid": false,
           "microphonePermission": false
         }

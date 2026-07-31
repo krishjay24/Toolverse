@@ -1,13 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 
 export type ToolCategory =
+  | 'daily'
+  | 'finance'
+  | 'text'
   | 'qr'
   | 'image'
-  | 'finance'
   | 'health'
-  | 'text'
-  | 'utility'
-  | 'converter';
+  | 'random'
+  | 'converters'
+  | 'security';
 
 export type ToolIconName = keyof typeof Ionicons.glyphMap;
 
@@ -20,6 +22,7 @@ export interface Tool {
   route: string;
   popular?: boolean;
   recommended?: boolean;
+  keywords?: string[];
 }
 
 export interface HistoryEntry {
@@ -36,11 +39,13 @@ export interface CategoryFilter {
 }
 
 export const CATEGORY_LABELS: Record<ToolCategory, string> = {
-  qr: 'QR',
-  image: 'Image',
+  daily: 'Daily Tools',
   finance: 'Finance',
+  text: 'Text Tools',
+  qr: 'QR & Barcode',
+  image: 'Image Tools',
   health: 'Health',
-  text: 'Text',
-  utility: 'Utility',
-  converter: 'Converter',
+  random: 'Random & Fun',
+  converters: 'Converters',
+  security: 'Security',
 };

@@ -1,218 +1,160 @@
-import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import Slider from '@react-native-community/slider';
-import { AppButton } from '@/components/ui/AppButton';
+import { useMemo, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { AppInput } from '@/components/ui/AppInput';
 import { ToolScreenLayout } from '@/components/tools/ToolScreenLayout';
 import { useToolTracking } from '@/hooks/useToolTracking';
 import { useTheme, spacing, radius, createTypography } from '@/theme';
 import { calculateEmi } from '@/utils/calculations';
 import { formatRupee } from '@/utils/formatters';
 
-function SliderInput({
-  label,
-  value,
-  min,
-  max,
-  step,
-  displayValue,
-  suffix,
-  onChange,
-}: {
-  label: string;
-  value: number;
-  min: number;
-  max: number;
-  step: number;
-  displayValue: string;
-  suffix: string;
-  onChange: (v: number) => void;
-}) {
-  const { colors } = useTheme();
-  const typography = createTypography(colors);
-
-  return (
-    <View style={[styles.sliderCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-      <View style={styles.sliderLabelRow}>
-        <Text style={[typography.label, { color: colors.textSecondary }]}>{label}</Text>
-        <View style={[styles.sliderValueBox, { backgroundColor: colors.primaryLight }]}>
-          <Text style={[typography.label, { color: colors.primary }]}>
-            {displayValue} {suffix}
-          </Text>
-        </View>
-      </View>
-      <Slider
-        style={styles.slider}
-        minimumValue={min}
-        maximumValue={max}
-        step={step}
-        value={value}
-        onValueChange={onChange}
-        minimumTrackTintColor={colors.primary}
-        maximumTrackTintColor={colors.border}
-        thumbTintColor={colors.primary}
-      />
-      <View style={styles.sliderRange}>
-        <Text style={[typography.caption, { color: colors.textSecondary }]}>
-          {min.toLocaleString()}
-        </Text>
-        <Text style={[typography.caption, { color: colors.textSecondary }]}>
-          {max.toLocaleString()}
-        </Text>
-      </View>
-    </View>
-  );
+function cleanNumber(value: string): number {
+  const numeric = value.replace(/[^0-9.]/g, '');
+  return Number(numeric) || 0;
 }
 
 export function EmiCalculatorScreen() {
-  const [loanAmount, setLoanAmount] = useState(500000);
-  const [interestRate, setInterestRate] = useState(8.5);
-  const [tenureYears, setTenureYears] = useState(5);
-  const [result, setResult] = useState<ReturnType<typeof calculateEmi> | null>(null);
+  const [loanAmountText, setLoanAmountText] = useState('500000');
+  const [interestRateText, setInterestRateText] = useState('8.5');
+  const [tenureYearsText, setTenureYearsText] = useState('5');
+
   const trackAction = useToolTracking('emi-calculator');
   const { colors } = useTheme();
   const typography = createTypography(colors);
 
-  useEffect(() => {
-    const emiResult = calculateEmi(loanAmount, interestRate, tenureYears * 12);
-    setResult(emiResult);
-  }, [loanAmount, interestRate, tenureYears]);
+  const loanAmount = cleanNumber(loanAmountText);
+  const interestRate = cleanNumber(interestRateText);
+  const tenureYears = cleanNumber(tenureYearsText);
+  const tenureMonths = Math.round(tenureYears * 12);
 
-  const principalPercent = result ? (loanAmount / result.totalPayment) * 100 : 70;
-  const interestPercent = 100 - principalPercent;
+  const result = useMemo(() => {
+    return calculateEmi(loanAmount, interestRate, tenureMonths);
+  }, [interestRate, loanAmount, tenureMonths]);
+
+  const principalPercent =
+    result.totalPayment > 0 ? (loanAmount / result.totalPayment) * 100 : 0;
+
+  const interestPercent = Math.max(0, 100 - principalPercent);
+
+  const handleFieldChange = (field: 'loan' | 'interest' | 'tenure', value: string) => {
+    if (field === 'loan') {
+      setLoanAmountText(value);
+    } else if (field === 'interest') {
+      setInterestRateText(value);
+    } else {
+      setTenureYearsText(value);
+    }
+
+    trackAction(`updated ${field} field`);
+  };
 
   return (
-    <ToolScreenLayout title="EMI Calculator" subtitle="Loan payment planner">
-      {/* Slider Inputs */}
-      <SliderInput
-        label="Loan Amount"
-        value={loanAmount}
-        min={10000}
-        max={10000000}
-        step={10000}
-        displayValue={`₹${(loanAmount / 100000).toFixed(1)}L`}
-        suffix=""
-        onChange={setLoanAmount}
-      />
+    <ToolScreenLayout title="EMI Calculator" subtitle="Plan your loan payments">
+      <View style={[styles.formCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <AppInput
+          label="Loan Amount"
+          value={loanAmountText}
+          onChangeText={(value) => handleFieldChange('loan', value)}
+          keyboardType="numeric"
+          prefix="₹"
+          placeholder="500000"
+          helperText="Enter the exact principal amount you want to borrow"
+        />
 
-      <SliderInput
-        label="Interest Rate (p.a.)"
-        value={interestRate}
-        min={1}
-        max={24}
-        step={0.1}
-        displayValue={interestRate.toFixed(1)}
-        suffix="%"
-        onChange={setInterestRate}
-      />
+        <AppInput
+          label="Interest Rate"
+          value={interestRateText}
+          onChangeText={(value) => handleFieldChange('interest', value)}
+          keyboardType="decimal-pad"
+          suffix="% p.a."
+          placeholder="8.5"
+          helperText="Add the annual interest rate"
+        />
 
-      <SliderInput
-        label="Tenure"
-        value={tenureYears}
-        min={1}
-        max={30}
-        step={1}
-        displayValue={tenureYears.toString()}
-        suffix="Yrs"
-        onChange={setTenureYears}
-      />
+        <AppInput
+          label="Tenure"
+          value={tenureYearsText}
+          onChangeText={(value) => handleFieldChange('tenure', value)}
+          keyboardType="numeric"
+          suffix="years"
+          placeholder="5"
+          helperText="Enter total loan tenure in years"
+        />
+      </View>
 
-      {/* Result Card */}
-      {result ? (
-        <View style={[styles.resultCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          {/* Monthly EMI hero */}
-          <View style={[styles.emiHero, { backgroundColor: colors.primaryLight }]}>
-            <Text style={[typography.caption, { color: colors.primary, letterSpacing: 1, textTransform: 'uppercase' }]}>
-              Monthly EMI
+      <View style={[styles.resultCard, { backgroundColor: colors.surface, borderColor: colors.border }]}> 
+        <View style={[styles.emiHero, { backgroundColor: colors.primaryLight }]}>
+          <Text style={[typography.caption, { color: colors.primary, letterSpacing: 1, textTransform: 'uppercase' }]}>
+            Monthly EMI
+          </Text>
+          <Text style={[styles.emiAmount, { color: colors.primary }]}>
+            {formatRupee(result.monthlyEmi)}
+          </Text>
+        </View>
+
+        <View style={styles.breakdownRow}>
+          <View style={[styles.breakdownItem, { borderRightWidth: StyleSheet.hairlineWidth, borderRightColor: colors.border }]}>
+            <Text style={[typography.caption, { color: colors.textSecondary, textAlign: 'center' }]}>
+              Total Interest
             </Text>
-            <Text style={[styles.emiAmount, { color: colors.primary }]}>
-              {formatRupee(result.monthlyEmi)}
+            <Text style={[typography.label, { color: colors.warning, textAlign: 'center' }]}>
+              {formatRupee(result.totalInterest)}
             </Text>
           </View>
 
-          {/* Breakdown row */}
-          <View style={styles.breakdownRow}>
-            <View style={[styles.breakdownItem, { borderRightWidth: StyleSheet.hairlineWidth, borderRightColor: colors.border }]}>
-              <Text style={[typography.caption, { color: colors.textSecondary, textAlign: 'center' }]}>
-                Total Interest
-              </Text>
-              <Text style={[typography.label, { color: '#F59E0B', textAlign: 'center' }]}>
-                {formatRupee(result.totalInterest)}
-              </Text>
-            </View>
-            <View style={styles.breakdownItem}>
-              <Text style={[typography.caption, { color: colors.textSecondary, textAlign: 'center' }]}>
-                Total Payment
-              </Text>
-              <Text style={[typography.label, { color: colors.primary, textAlign: 'center' }]}>
-                {formatRupee(result.totalPayment)}
-              </Text>
-            </View>
-          </View>
-
-          {/* Stacked bar */}
-          <View style={styles.barSection}>
-            <View style={styles.barLegend}>
-              <View style={styles.legendItem}>
-                <View style={[styles.legendDot, { backgroundColor: colors.primary }]} />
-                <Text style={[typography.caption, { color: colors.textSecondary }]}>Principal</Text>
-              </View>
-              <View style={styles.legendItem}>
-                <View style={[styles.legendDot, { backgroundColor: '#F59E0B' }]} />
-                <Text style={[typography.caption, { color: colors.textSecondary }]}>Interest</Text>
-              </View>
-            </View>
-            <View style={[styles.progressBar, { backgroundColor: colors.border }]}>
-              <View
-                style={[
-                  styles.progressFill,
-                  { backgroundColor: colors.primary, width: `${principalPercent}%` as any },
-                ]}
-              />
-              <View
-                style={[
-                  styles.progressFill,
-                  { backgroundColor: '#F59E0B', width: `${interestPercent}%` as any },
-                ]}
-              />
-            </View>
+          <View style={styles.breakdownItem}>
+            <Text style={[typography.caption, { color: colors.textSecondary, textAlign: 'center' }]}>
+              Total Payment
+            </Text>
+            <Text style={[typography.label, { color: colors.primary, textAlign: 'center' }]}>
+              {formatRupee(result.totalPayment)}
+            </Text>
           </View>
         </View>
-      ) : null}
+
+        <View style={[styles.barSection, { borderTopColor: colors.border }]}>
+          <View style={styles.barLegend}>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: colors.primary }]} />
+              <Text style={[typography.caption, { color: colors.textSecondary }]}>Principal</Text>
+            </View>
+
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: colors.warning }]} />
+              <Text style={[typography.caption, { color: colors.textSecondary }]}>Interest</Text>
+            </View>
+          </View>
+
+          <View style={[styles.progressBar, { backgroundColor: colors.border }]}>
+            <View
+              style={[
+                styles.progressFill,
+                { backgroundColor: colors.primary, width: `${principalPercent}%` as any },
+              ]}
+            />
+            <View
+              style={[
+                styles.progressFill,
+                { backgroundColor: colors.warning, width: `${interestPercent}%` as any },
+              ]}
+            />
+          </View>
+        </View>
+      </View>
     </ToolScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  sliderCard: {
+  formCard: {
     borderRadius: radius.card,
     borderWidth: 1,
     padding: spacing.base,
-    gap: spacing.sm,
-  },
-  sliderLabelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  sliderValueBox: {
-    borderRadius: 999,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-  },
-  slider: {
-    width: '100%',
-    height: 32,
-    marginHorizontal: -spacing.sm,
-  },
-  sliderRange: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    gap: spacing.base,
   },
   resultCard: {
     borderRadius: radius.card,
     borderWidth: 1,
     overflow: 'hidden',
-    gap: 0,
   },
   emiHero: {
     alignItems: 'center',

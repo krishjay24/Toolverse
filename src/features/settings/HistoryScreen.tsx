@@ -14,7 +14,7 @@ export function HistoryScreen() {
   const history = useToolStore((s) => s.history);
   const openTool = useOpenTool();
   const tabBarInset = useTabBarInset();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const typography = createTypography(colors);
 
   return (
@@ -50,15 +50,21 @@ export function HistoryScreen() {
                 onPress={() => tool && openTool(tool.route)}
                 style={({ pressed }) => [
                   styles.card,
-                  { backgroundColor: colors.surface, borderColor: colors.border },
+                  {
+                    backgroundColor: colors.surface,
+                    borderColor: colors.border,
+                    shadowOpacity: isDark ? 0 : 0.05,
+                    shadowRadius: isDark ? 0 : 8,
+                    elevation: isDark ? 0 : 2,
+                  },
                   pressed && styles.pressed,
                 ]}
               >
-                <View style={[styles.iconWrap, { backgroundColor: colors.primaryLight }]}>
+                <View style={[styles.iconWrap, { backgroundColor: colors.primary }]}> 
                   <Ionicons
                     name={tool?.icon ?? 'construct-outline'}
                     size={20}
-                    color={colors.primary}
+                    color="#FFFFFF"
                   />
                 </View>
                 <View style={styles.content}>
@@ -97,6 +103,8 @@ const styles = StyleSheet.create({
     borderRadius: radius.card,
     borderWidth: 1,
     padding: spacing.base,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
   },
   pressed: {
     opacity: 0.9,
@@ -105,7 +113,7 @@ const styles = StyleSheet.create({
   iconWrap: {
     width: 44,
     height: 44,
-    borderRadius: 12,
+    borderRadius: radius.icon,
     alignItems: 'center',
     justifyContent: 'center',
   },

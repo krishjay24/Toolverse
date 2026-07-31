@@ -18,9 +18,9 @@ export function createTypography(colors: ThemeColors) {
       letterSpacing: -0.3,
     } satisfies TextStyle,
     h3: {
-      fontSize: 18,
-      fontWeight: '600',
-      lineHeight: 24,
+      fontSize: 20,
+      fontWeight: '700',
+      lineHeight: 26,
       color: colors.textPrimary,
     } satisfies TextStyle,
     body: {
@@ -45,7 +45,7 @@ export function createTypography(colors: ThemeColors) {
       fontSize: 12,
       fontWeight: '500',
       lineHeight: 16,
-      color: colors.textSecondary,
+      color: colors.textMuted,
     } satisfies TextStyle,
     button: {
       fontSize: 16,

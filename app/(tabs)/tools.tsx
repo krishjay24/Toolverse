@@ -1,3 +1,5 @@
-import { ToolsScreen } from '@/features/home/ToolsScreen';
+import { Redirect } from 'expo-router';
 
-export default ToolsScreen;
+export default function ToolsRoute() {
+	return <Redirect href="/(tabs)/home" />;
+}

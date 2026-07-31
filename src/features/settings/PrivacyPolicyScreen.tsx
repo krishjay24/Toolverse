@@ -13,7 +13,7 @@ const SECTIONS = [
   },
   {
     title: 'Permissions',
-    body: 'Camera access is used only for QR scanning. Photo and media access is used only when you choose images for compression or resizing. Permissions can be revoked in Android settings.',
+    body: 'Camera access is used only for QR scanning and color picking. Photo and media access is used only when you choose images for compression or resizing. Toolverse does not upload camera images or selected photos to any server. Permissions can be revoked in Android settings.',
   },
   {
     title: 'Advertising',
@@ -37,7 +37,7 @@ export function PrivacyPolicyScreen() {
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
       <AppHeader title="Privacy Policy" showBack />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={typography.bodySmall}>Last updated: June 2026</Text>
+        <Text style={typography.bodySmall}>Last updated: July 2026</Text>
         {SECTIONS.map((section) => (
           <View key={section.title} style={styles.section}>
             <Text style={typography.h3}>{section.title}</Text>

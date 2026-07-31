@@ -30,19 +30,19 @@ export function ThemeSelector({ value, onChange }: ThemeSelectorProps) {
               styles.chip,
               {
                 borderColor: active ? colors.primary : colors.border,
-                backgroundColor: active ? colors.primaryLight : colors.surface,
+                backgroundColor: active ? colors.primary : colors.surface,
               },
             ]}
           >
             <Ionicons
               name={option.icon}
               size={16}
-              color={active ? colors.primary : colors.textSecondary}
+              color={active ? '#FFFFFF' : colors.textPrimary}
             />
             <Text
               style={[
                 typography.caption,
-                active && { color: colors.primary, fontWeight: '600' },
+                { color: active ? '#FFFFFF' : colors.textPrimary, fontWeight: '600' },
               ]}
             >
               {option.label}
@@ -67,6 +67,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     borderWidth: 1,
     borderRadius: radius.button,
-    paddingVertical: spacing.md,
+    minHeight: 46,
+    paddingVertical: spacing.sm,
   },
 });

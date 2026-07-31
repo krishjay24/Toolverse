@@ -18,7 +18,7 @@ export function AppCard({
   border = true,
   disabled = false,
 }: AppCardProps) {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
 
   const content = (
     <View
@@ -27,6 +27,13 @@ export function AppCard({
         { backgroundColor: colors.surface },
         padded && styles.padded,
         border && { borderWidth: 1, borderColor: colors.border },
+        {
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: isDark ? 0 : 0.05,
+          shadowRadius: isDark ? 0 : 8,
+          elevation: isDark ? 0 : 2,
+        },
         disabled && styles.disabled,
         style,
       ]}

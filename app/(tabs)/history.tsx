@@ -1,3 +1,5 @@
-import { HistoryScreen } from '@/features/settings/HistoryScreen';
+import { Redirect } from 'expo-router';
 
-export default HistoryScreen;
+export default function HistoryRoute() {
+	return <Redirect href="/(tabs)/home" />;
+}
