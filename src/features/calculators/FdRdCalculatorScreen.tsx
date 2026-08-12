@@ -1,10 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { AppInput } from '@/components/ui/AppInput';
 import { ToolScreenLayout } from '@/components/tools/ToolScreenLayout';
 import { ToolResultHero } from '@/components/tools/ToolResultHero';
 import { StatGrid } from '@/components/tools/StatGrid';
-import { useToolTracking } from '@/hooks/useToolTracking';
+import { useDebouncedToolTracking } from '@/hooks/useToolTracking';
 import { useTheme, spacing, radius, createTypography } from '@/theme';
 import {
   calculateFixedDeposit,
@@ -27,7 +27,7 @@ export function FdRdCalculatorScreen() {
   const [rate, setRate] = useState('7.5');
   const [tenureMonths, setTenureMonths] = useState('12');
 
-  const trackAction = useToolTracking('fd-rd-calculator');
+  const { markEdited, scheduleTrack } = useDebouncedToolTracking('fd-rd-calculator');
   const { colors } = useTheme();
   const typography = createTypography(colors);
 
@@ -50,9 +50,33 @@ export function FdRdCalculatorScreen() {
         ? Number(result.totalDeposit)
         : amountValue;
 
+  useEffect(() => {
+    if (amountValue <= 0 || tenureValue <= 0) {
+      return;
+    }
+    scheduleTrack(
+      `${mode.toUpperCase()} maturity ${formatRupee(result.maturityAmount)}`,
+    );
+  }, [amountValue, tenureValue, mode, result.maturityAmount, scheduleTrack]);
+
   const handleModeChange = (nextMode: CalculatorMode) => {
+    markEdited();
     setMode(nextMode);
-    trackAction(`selected ${nextMode.toUpperCase()} calculator`);
+  };
+
+  const onAmountChange = (value: string) => {
+    markEdited();
+    setAmount(value);
+  };
+
+  const onRateChange = (value: string) => {
+    markEdited();
+    setRate(value);
+  };
+
+  const onTenureChange = (value: string) => {
+    markEdited();
+    setTenureMonths(value);
   };
 
   return (
@@ -100,7 +124,7 @@ export function FdRdCalculatorScreen() {
         <AppInput
           label={mode === 'fd' ? 'Deposit Amount' : 'Monthly Deposit'}
           value={amount}
-          onChangeText={setAmount}
+          onChangeText={onAmountChange}
           keyboardType="numeric"
           prefix="₹"
           placeholder={mode === 'fd' ? '100000' : '5000'}
@@ -110,7 +134,7 @@ export function FdRdCalculatorScreen() {
         <AppInput
           label="Interest Rate"
           value={rate}
-          onChangeText={setRate}
+          onChangeText={onRateChange}
           keyboardType="decimal-pad"
           suffix="% p.a."
           placeholder="7.5"
@@ -119,7 +143,7 @@ export function FdRdCalculatorScreen() {
         <AppInput
           label="Tenure"
           value={tenureMonths}
-          onChangeText={setTenureMonths}
+          onChangeText={onTenureChange}
           keyboardType="numeric"
           suffix="months"
           placeholder="12"

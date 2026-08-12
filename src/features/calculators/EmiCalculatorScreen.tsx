@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { AppInput } from '@/components/ui/AppInput';
 import { ToolScreenLayout } from '@/components/tools/ToolScreenLayout';
-import { useToolTracking } from '@/hooks/useToolTracking';
+import { useDebouncedToolTracking } from '@/hooks/useToolTracking';
 import { useTheme, spacing, radius, createTypography } from '@/theme';
 import { calculateEmi } from '@/utils/calculations';
 import { formatRupee } from '@/utils/formatters';
@@ -17,7 +17,7 @@ export function EmiCalculatorScreen() {
   const [interestRateText, setInterestRateText] = useState('8.5');
   const [tenureYearsText, setTenureYearsText] = useState('5');
 
-  const trackAction = useToolTracking('emi-calculator');
+  const { markEdited, scheduleTrack } = useDebouncedToolTracking('emi-calculator');
   const { colors } = useTheme();
   const typography = createTypography(colors);
 
@@ -35,7 +35,15 @@ export function EmiCalculatorScreen() {
 
   const interestPercent = Math.max(0, 100 - principalPercent);
 
+  useEffect(() => {
+    if (loanAmount <= 0 || tenureMonths <= 0) {
+      return;
+    }
+    scheduleTrack(`EMI ${formatRupee(result.monthlyEmi)}`);
+  }, [loanAmount, tenureMonths, result.monthlyEmi, scheduleTrack]);
+
   const handleFieldChange = (field: 'loan' | 'interest' | 'tenure', value: string) => {
+    markEdited();
     if (field === 'loan') {
       setLoanAmountText(value);
     } else if (field === 'interest') {
@@ -43,8 +51,6 @@ export function EmiCalculatorScreen() {
     } else {
       setTenureYearsText(value);
     }
-
-    trackAction(`updated ${field} field`);
   };
 
   return (

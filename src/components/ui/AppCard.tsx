@@ -1,10 +1,16 @@
-import { Pressable, StyleSheet, View, ViewStyle } from 'react-native';
+import {
+  Pressable,
+  StyleSheet,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import { useTheme, spacing, radius } from '@/theme';
 
 interface AppCardProps {
   children: React.ReactNode;
   onPress?: () => void;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   padded?: boolean;
   border?: boolean;
   disabled?: boolean;

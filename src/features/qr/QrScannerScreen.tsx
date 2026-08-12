@@ -39,6 +39,10 @@ export function QrScannerScreen() {
       if (scannedValue || !result.data) return;
       setScannedValue(result.data);
       trackAction(result.data.slice(0, 80));
+
+      if (isUrl(result.data) && (await Linking.canOpenURL(result.data))) {
+        await Linking.openURL(result.data);
+      }
     },
     [scannedValue, trackAction],
   );
@@ -123,9 +127,6 @@ export function QrScannerScreen() {
             onPress={() => setTorch((t) => !t)}
           >
             <Ionicons name={torch ? 'flash' : 'flash-outline'} size={20} color="#FFFFFF" />
-          </Pressable>
-          <Pressable style={[styles.circleBtn, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
-            <Ionicons name="image-outline" size={20} color="#FFFFFF" />
           </Pressable>
         </View>
       </View>

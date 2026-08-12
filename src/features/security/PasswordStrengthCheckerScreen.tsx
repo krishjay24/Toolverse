@@ -1,9 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { AppButton } from '@/components/ui/AppButton';
 import { ToolScreenLayout } from '@/components/tools/ToolScreenLayout';
-import { useToolTracking } from '@/hooks/useToolTracking';
+import { useDebouncedToolTracking } from '@/hooks/useToolTracking';
 import { useTheme, spacing, radius, createTypography } from '@/theme';
 import { analyzePasswordStrength } from '@/utils/passwordStrength';
 
@@ -28,7 +28,9 @@ export function PasswordStrengthCheckerScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const trackAction = useToolTracking('password-strength-checker');
+  const { markEdited, scheduleTrack } = useDebouncedToolTracking(
+    'password-strength-checker',
+  );
   const { colors } = useTheme();
   const typography = createTypography(colors);
 
@@ -38,17 +40,21 @@ export function PasswordStrengthCheckerScreen() {
 
   const strengthColor = getStrengthColor(result.label);
 
+  useEffect(() => {
+    if (password.length < 8) {
+      return;
+    }
+    scheduleTrack(`Strength: ${result.label}`);
+  }, [password.length, result.label, scheduleTrack]);
+
   const handleClear = () => {
     setPassword('');
     setShowPassword(false);
   };
 
   const handlePasswordChange = (text: string) => {
+    markEdited();
     setPassword(text);
-    // Track if user completes password (debounced in real app, but simple for now)
-    if (text.length >= 8) {
-      trackAction(`Password length: ${text.length}`);
-    }
   };
 
   return (

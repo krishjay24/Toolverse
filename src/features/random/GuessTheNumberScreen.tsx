@@ -29,7 +29,6 @@ export function GuessTheNumberScreen() {
     setGuessInput('');
     setHint('');
     setError('');
-    trackAction('New game started');
   };
 
   const handleSubmitGuess = () => {

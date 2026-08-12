@@ -19,7 +19,7 @@ try {
   .\gradlew.bat bundleRelease
   $aab = Get-ChildItem "app\build\outputs\bundle\release\*.aab" -ErrorAction SilentlyContinue | Select-Object -First 1
   if ($aab) {
-    Write-Host "`nAAB ready (versionCode 5):" -ForegroundColor Green
+    Write-Host "`nAAB ready (versionCode 8):" -ForegroundColor Green
     Write-Host $aab.FullName
   }
 } finally {

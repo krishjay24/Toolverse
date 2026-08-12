@@ -71,7 +71,6 @@ export function RemoveExtraSpacesScreen() {
 
   const handleModeSelect = (mode: CleaningMode) => {
     setSelectedMode(mode);
-    trackAction(`Selected ${mode}`);
   };
 
   const handleCopy = async () => {

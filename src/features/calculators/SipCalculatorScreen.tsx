@@ -1,10 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '@/components/ui/AppButton';
 import { AppInput } from '@/components/ui/AppInput';
 import { StatGrid } from '@/components/tools/StatGrid';
 import { ToolScreenLayout } from '@/components/tools/ToolScreenLayout';
-import { useToolTracking } from '@/hooks/useToolTracking';
+import { useDebouncedToolTracking } from '@/hooks/useToolTracking';
 import { useTheme, spacing, radius, createTypography } from '@/theme';
 import { calculateSip } from '@/utils/calculations';
 
@@ -18,20 +18,25 @@ export function SipCalculatorScreen() {
   const [annualReturn, setAnnualReturn] = useState('12');
   const [investmentYears, setInvestmentYears] = useState('10');
 
-  const trackAction = useToolTracking('sip-calculator');
+  const { markEdited, scheduleTrack } = useDebouncedToolTracking('sip-calculator');
   const { colors } = useTheme();
   const typography = createTypography(colors);
 
-  const result = useMemo(() => {
-    const monthly = cleanNumber(monthlyInvestment);
-    const annual = cleanNumber(annualReturn);
-    const years = cleanNumber(investmentYears);
+  const monthly = cleanNumber(monthlyInvestment);
+  const annual = cleanNumber(annualReturn);
+  const years = cleanNumber(investmentYears);
 
-    const sipResult = calculateSip(monthly, annual, years);
-    trackAction(`SIP: ₹${monthly}/mo, ${annual}% return, ${years} years`);
+  const result = useMemo(
+    () => calculateSip(monthly, annual, years),
+    [monthly, annual, years],
+  );
 
-    return sipResult;
-  }, [monthlyInvestment, annualReturn, investmentYears, trackAction]);
+  useEffect(() => {
+    if (monthly <= 0 || years <= 0) {
+      return;
+    }
+    scheduleTrack(`SIP: ₹${monthly}/mo, ${annual}% return, ${years} years`);
+  }, [monthly, annual, years, scheduleTrack]);
 
   const handleClear = () => {
     setMonthlyInvestment('');
@@ -39,10 +44,22 @@ export function SipCalculatorScreen() {
     setInvestmentYears('');
   };
 
-  const isValid =
-    cleanNumber(monthlyInvestment) > 0 &&
-    cleanNumber(investmentYears) > 0 &&
-    cleanNumber(annualReturn) >= 0;
+  const onMonthlyChange = (value: string) => {
+    markEdited();
+    setMonthlyInvestment(value);
+  };
+
+  const onAnnualChange = (value: string) => {
+    markEdited();
+    setAnnualReturn(value);
+  };
+
+  const onYearsChange = (value: string) => {
+    markEdited();
+    setInvestmentYears(value);
+  };
+
+  const isValid = monthly > 0 && years > 0 && annual >= 0;
 
   return (
     <ToolScreenLayout
@@ -59,7 +76,7 @@ export function SipCalculatorScreen() {
         <AppInput
           label="Monthly Investment"
           value={monthlyInvestment}
-          onChangeText={setMonthlyInvestment}
+          onChangeText={onMonthlyChange}
           prefix="₹"
           placeholder="5000"
           keyboardType="decimal-pad"
@@ -68,7 +85,7 @@ export function SipCalculatorScreen() {
         <AppInput
           label="Expected Annual Return"
           value={annualReturn}
-          onChangeText={setAnnualReturn}
+          onChangeText={onAnnualChange}
           suffix="% p.a."
           placeholder="12"
           keyboardType="decimal-pad"
@@ -77,7 +94,7 @@ export function SipCalculatorScreen() {
         <AppInput
           label="Investment Period"
           value={investmentYears}
-          onChangeText={setInvestmentYears}
+          onChangeText={onYearsChange}
           suffix="years"
           placeholder="10"
           keyboardType="decimal-pad"

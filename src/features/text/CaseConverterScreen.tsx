@@ -76,7 +76,6 @@ export function CaseConverterScreen() {
 
   const handleCaseSelect = (caseType: CaseType) => {
     setSelectedCase(caseType);
-    trackAction(`Selected ${caseType}`);
   };
 
   const handleCopy = async () => {

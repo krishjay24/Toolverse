@@ -49,6 +49,10 @@ export function preloadInterstitialAd(): void {
     });
     interstitial.addAdEventListener(AdEventType.ERROR, () => {
       isInterstitialLoaded = false;
+      // Retry so a single failed load does not permanently disable interstitials.
+      setTimeout(() => {
+        preloadInterstitialAd();
+      }, 5_000);
     });
     interstitial.load();
   } catch {

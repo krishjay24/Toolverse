@@ -17,6 +17,9 @@ const CHIP_ICONS: Record<FilterChipId, keyof typeof Ionicons.glyphMap> = {
   qr: 'qr-code-outline',
   health: 'heart-outline',
   fun: 'game-controller-outline',
+  image: 'image-outline',
+  converters: 'swap-horizontal-outline',
+  security: 'shield-checkmark-outline',
 };
 
 function ToolFilterChipsComponent({ activeId, onSelect }: ToolFilterChipsProps) {
